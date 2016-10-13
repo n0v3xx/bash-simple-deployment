@@ -142,7 +142,7 @@ if [ "$startDeploy" = "y" ]
 
         # using "" instead of '' to interpret the variables - change permissions | delete symlink | create symlink
         echo "Setzte Schreibrechte && Lösche alten Symlink && Erstelle Symlink"
-        ssh $SERVER_USER@$SERVER_IP "chown -R ${SERVER_WEBSERVER_USER}:${SERVER_WEBSERVER_GROUP} ${SERVER_PATH_TAGS}/$tag && rm ${SERVER_PATH_ACTIVE} && ln -s ${SERVER_PATH_TAGS}/$tag/${SERVER_PATH_WWW} ${SERVER_PATH_ACTIVE}"
+        ssh $SERVER_USER@$SERVER_IP "chown -R ${SERVER_WEBSERVER_USER}:${SERVER_WEBSERVER_GROUP} ${SERVER_PATH_TAGS}/$tag && rm ${SERVER_PATH_ACTIVE} && ln -s ${SERVER_PATH_TAGS}/$tag/${SERVER_FOLDER_WWW} ${SERVER_PATH_ACTIVE}"
 
         # set permissions
         for var in "${PATH_CHMOD_ARRAY[@]}"

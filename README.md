@@ -1,6 +1,8 @@
 # bash-simple-deployment
 Simple bash deployment script for basic web projects.
 
+![simple deployment structure](./deployment.jpg)
+
 ## Required
 
 * bash, git, php, rsync or scp
@@ -11,16 +13,19 @@ Simple bash deployment script for basic web projects.
 
 To make the deploy process simple as possible i recommend this directory structure on your server.
 
-* Webserver
+* Deploy Server
+    * /path/to/bash-simple-deployment
+
+* Web Server (Target)
     * /var/www/project
         * /active - symlink to newest release
         * /releases - all deployed releases
             * /X.X.X - Releases
-        
 
 ## Before you start
 
-Modify the config values in /config/****.sh to your needs.
+Modify the config values in /config/****.sh to your needs. Change your webserver config and modify the path to the 
+"active" directory. The active directory link to your active public index.
 
 ## Run deployment
 
