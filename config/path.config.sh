@@ -10,5 +10,7 @@ PATH_BUILD="build/"
 PATH_TAGS="tags/"
 PATH_TMP="tmp/"
 
-# Folder they need 777
-PATH_CHMOD_ARRAY=(public config)
+# Folder they custom  chmod
+PATH_CHMOD_VALUE=777
+# array syntax (test test2 test3)
+PATH_CHMOD_ARRAY=(data/*)

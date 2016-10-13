@@ -5,9 +5,9 @@ source config.sh
 
 # Installation
 echo "Willkommen zum deployment deines Projektes"
-read -p "Installation auf lokales Gerät oder Deploy Server? (local | live): " env
+read -p "Möchten Sie den deploy Prozess starten? (y) " startDeploy
 
-if [ "$env" = ${G_DEFAULT_ENV} ]
+if [ "$startDeploy" = "y" ]
     then
         ############################# create tags folder #################################
         if [ -d ${PATH_TAGS} ]
@@ -60,7 +60,7 @@ if [ "$env" = ${G_DEFAULT_ENV} ]
 
         cd ..
         ############################# change user and group #################################
-        chown -R ${G_WEBSERVER_USER}:${G_WEBSERVER_GROUP} $tag/*
+        #chown -R ${G_WEBSERVER_USER}:${G_WEBSERVER_GROUP} $tag/*
 
         # github swtich
         if test $GIT_GITHUB_SWITCH == 1
@@ -113,18 +113,6 @@ if [ "$env" = ${G_DEFAULT_ENV} ]
             cd ../../
         fi
 
-        chown -R ${G_WEBSERVER_USER}:${G_WEBSERVER_GROUP} $tag/*
-        # Schleife für alle Ordner
-        for var in "${PATH_CHMOD_ARRAY[@]}"
-        do
-            if test $GIT_GITHUB_SWITCH == 1
-            then
-                chmod 777 -R $tag/$GIT_DEFAULT_BRANCH/$var/*
-            else
-                chmod 777 -R $tag/$var/*
-            fi
-        done
-
         echo "Glückwusch die Installation ist beendet!"
 
         #############################################################################################
@@ -137,65 +125,36 @@ if [ "$env" = ${G_DEFAULT_ENV} ]
         # github swtich
         if test $GIT_GITHUB_SWITCH == 1
         then
-            scp -r $tag/$GIT_DEFAULT_BRANCH/ $SERVER_USER@$SERVER_IP:$SERVER_PATH_TAGS/$tag/
+            if test $G_SYNC_MODE = "rsync"
+            then
+                rsync -r --progress $tag/$GIT_DEFAULT_BRANCH/ $SERVER_USER@$SERVER_IP:$SERVER_PATH_TAGS/$tag/
+            else
+                scp -r $tag/$GIT_DEFAULT_BRANCH/ $SERVER_USER@$SERVER_IP:$SERVER_PATH_TAGS/$tag/
+            fi
         else
-            scp -r $tag/ $SERVER_USER@$SERVER_IP:$SERVER_PATH_TAGS/$tag/
+            if test $G_SYNC_MODE = "rsync"
+            then
+                rsync -r -v --progress $tag/ $SERVER_USER@$SERVER_IP:$SERVER_PATH_TAGS/$tag/
+            else
+                scp -r $tag/ $SERVER_USER@$SERVER_IP:$SERVER_PATH_TAGS/$tag/
+            fi
         fi
 
-        ## alternative @todo Test it with rsync
-        #rsync -r -v --progress -e ssh user@remote-system:/address/to/remote/file /home/user/
-
         # using "" instead of '' to interpret the variables - change permissions | delete symlink | create symlink
-        ssh $SERVER_USER@$SERVER_IP "chown -R ${SERVER_WEBSERVER_USER}:${SERVER_WEBSERVER_GROUP} ${SERVER_PATH_TAGS}/$tag | rm ${SERVER_PATH_ACTIVE} | ln -s ${SERVER_PATH_TAGS}/$tag/${SERVER_PATH_WWW} ${SERVER_PATH_ACTIVE}"
+        echo "Setzte Schreibrechte && Lösche alten Symlink && Erstelle Symlink"
+        ssh $SERVER_USER@$SERVER_IP "chown -R ${SERVER_WEBSERVER_USER}:${SERVER_WEBSERVER_GROUP} ${SERVER_PATH_TAGS}/$tag && rm ${SERVER_PATH_ACTIVE} && ln -s ${SERVER_PATH_TAGS}/$tag/${SERVER_PATH_WWW} ${SERVER_PATH_ACTIVE}"
+
+        # set permissions
+        for var in "${PATH_CHMOD_ARRAY[@]}"
+        do
+            ssh $SERVER_USER@$SERVER_IP "chmod $PATH_CHMOD_VALUE -R ${SERVER_PATH_TAGS}/$tag/$var"
+            echo "Setze Schreibrechte für ${SERVER_PATH_TAGS}/$tag/$var"
+        done
 
         echo "Deploy Fertig!"
 
     else
-        # Projekt auschecken
-#        git archive --format=tar --remote=${GIT_REMOTEHOST_SSH} ${GIT_DEFAULT_BRANCH} | tar -xf -
-#
-#        # aus dem Verzeichnis /script raus gehen und ins /build wechseln
-#        cd ${PATH_BUILD}
-#        echo "Schritt 1: Prüfe composer.phar ..."
-#
-#        # checken ob composer bereits da ist
-#        if [ -f ${COMPOSER_DEFAULT_NAME} ]
-#          then
-#            echo "Schritt 1: Die Datei composer.phar existiert bereits. [Done]"
-#            php ${COMPOSER_DEFAULT_NAME} self-update
-#            echo "Schritt 2: composer self update [Done]"
-#          else
-#            echo "Schritt 1: Die Datei composer.phar existiert nicht und muss heruntergeladen werden."
-#            curl -s ${COMPOSER_DONWLOAD_URL} | php
-#            if [ -f ${COMPOSER_DEFAULT_NAME} ]
-#                then
-#                    echo "Schritt 1: Download erfoglreich [Done]"
-#                else
-#                    echo "Schritt 1: Konnte nicht heruntergeladen werden [Error]"
-#            fi
-#        fi
-#
-#        echo "Lokale Installation:"
-#        echo "Schritt 3: Starte composer update"
-#        php ${COMPOSER_DEFAULT_NAME} update
-#        echo "Schritt 3: composer update [Done]"
-#
-#        echo "Schritt 4: Starte composer install"
-#        php ${COMPOSER_DEFAULT_NAME} install
-#        echo "Schritt 4: composer install [Done]"
-#
-#        echo "Schirtt 5: Phing install starten"
-#        # phing install
-#        ${PATH_PHING} install
-#
-#        # SCHREIBRECHTE!
-#        cd ../
-#
-#        # Schleife für alle Ordner
-#        for var in "${PATH_CHMOD_ARRAY[@]}"
-#        do
-#            chmod 777 -R $tag/var/*
-#        done
-#
-        echo "Glückwusch die Installation ist beendet!"
+
+        echo "Prozess beendet."
+
 fi
