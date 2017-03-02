@@ -10,7 +10,6 @@ SERVER_USER="root"
 SERVER_WEBSERVER_USER="www-data"
 SERVER_WEBSERVER_GROUP="www-data"
 
-SERVER_PATH_BASE="/srv/test"
 SERVER_PATH_TAGS="/srv/test/releases"
 SERVER_PATH_ACTIVE="/srv/test/active"
 

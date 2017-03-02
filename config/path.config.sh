@@ -4,7 +4,6 @@
 ################# Path ##################
 #########################################
 
-PATH_PROJECT="/var/www/project"
 PATH_PHING="vendor/bin/phing"
 PATH_BUILD="build/"
 PATH_TAGS="tags/"
