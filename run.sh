@@ -151,6 +151,12 @@ if [ "$startDeploy" = "y" ]
             echo "Setze Schreibrechte für ${SERVER_PATH_TAGS}/$tag/$var"
         done
 
+        # symlink project log folder to log folder
+        if test $LOG_SYMLINKING == 1
+        then
+            ssh $SERVER_USER@$SERVER_IP "rm ${SERVER_PATH_LOG} && ln -s ${SERVER_PATH_TAGS}/$tag/${SERVER_FOLDER_LOG} ${SERVER_PATH_LOG} && chown -R ${SERVER_WEBSERVER_USER}:${SERVER_WEBSERVER_GROUP} ${SERVER_PATH_LOG}"
+        fi
+
         echo "Deploy Fertig!"
 
     else
