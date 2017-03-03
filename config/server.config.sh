@@ -17,7 +17,7 @@ SERVER_PATH_ACTIVE="/srv/test/active"
 # name of your public directory in your project
 SERVER_FOLDER_WWW="public"
 
-# enable log folder symlinking
+# enable log folder symlinking (symlink log folder in project to static log folder from vhost)
 LOG_SYMLINKING=0
 # relative to project root
 SERVER_FOLDER_LOG="data/log"

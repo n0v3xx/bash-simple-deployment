@@ -145,16 +145,29 @@ if [ "$startDeploy" = "y" ]
         ssh $SERVER_USER@$SERVER_IP "chown -R ${SERVER_WEBSERVER_USER}:${SERVER_WEBSERVER_GROUP} ${SERVER_PATH_TAGS}/$tag && rm ${SERVER_PATH_ACTIVE} && ln -s ${SERVER_PATH_TAGS}/$tag/${SERVER_FOLDER_WWW} ${SERVER_PATH_ACTIVE}"
 
         # set permissions
-        for var in "${PATH_CHMOD_ARRAY[@]}"
-        do
-            ssh $SERVER_USER@$SERVER_IP "chmod $PATH_CHMOD_VALUE -R ${SERVER_PATH_TAGS}/$tag/$var"
-            echo "Setze Schreibrechte für ${SERVER_PATH_TAGS}/$tag/$var"
-        done
+        if test $CUSTOM_CHMOD == 1
+        then
+            for var in "${PATH_CHMOD_ARRAY[@]}"
+            do
+                ssh $SERVER_USER@$SERVER_IP "chmod $PATH_CHMOD_VALUE -R ${SERVER_PATH_TAGS}/$tag/$var"
+                echo "Setze Schreibrechte für ${SERVER_PATH_TAGS}/$tag/$var"
+            done
+        fi
 
         # symlink project log folder to log folder
         if test $LOG_SYMLINKING == 1
         then
             ssh $SERVER_USER@$SERVER_IP "rm ${SERVER_PATH_LOG} && ln -s ${SERVER_PATH_TAGS}/$tag/${SERVER_FOLDER_LOG} ${SERVER_PATH_LOG} && chown -R ${SERVER_WEBSERVER_USER}:${SERVER_WEBSERVER_GROUP} ${SERVER_PATH_LOG}"
+        fi
+
+        # clear cache folders
+        if test $CLEAR_CACHE == 1
+        then
+            for var in "${PATH_CLEAR_CACHE_ARRAY[@]}"
+            do
+                ssh $SERVER_USER@$SERVER_IP "rm -rf ${SERVER_PATH_TAGS}/$tag/$var"
+                echo "Leere Cache Ordner: ${SERVER_PATH_TAGS}/$tag/$var"
+            done
         fi
 
         echo "Deploy Fertig!"
