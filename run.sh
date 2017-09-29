@@ -25,7 +25,7 @@ if [ "$startDeploy" = "y" ]
 
         ############################# checkout from git #################################
         read -p "Checkout Tag (z.B. 1.0.0) (default: master): " gittag
-        if [ "$gittag" != ${GIT_DEFAULT_BRANCH} ]
+        if [ "$gittag" == ${GIT_DEFAULT_BRANCH} ]
             then
                 # github swtich
                 if test $GIT_GITHUB_SWITCH == 1
