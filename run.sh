@@ -19,13 +19,13 @@ if [ "$startDeploy" = "y" ]
         fi
 
         ############################# create tag folder #################################
-        read -p "Erstelle Tag Ordner (z.B. 1.0.0): " tag
-        mkdir $tag
-        cd $tag
+        read -p "Erstelle Tag Ordner (z.B. 1.0.0): " TAG
+        mkdir $TAG
+        cd $TAG
 
         ############################# checkout from git #################################
-        read -p "Checkout Tag (z.B. 1.0.0) (default: master): " gittag
-        if [ "$gittag" == ${GIT_DEFAULT_BRANCH} ]
+        read -p "Checkout Tag (z.B. 1.0.0) (default: master): " GITTAG
+        if [ "$GITTAG" == ${GIT_DEFAULT_BRANCH} ]
             then
                 # github swtich
                 if test $GIT_GITHUB_SWITCH == 1
@@ -43,11 +43,11 @@ if [ "$startDeploy" = "y" ]
                 if test $GIT_GITHUB_SWITCH == 1
                 then
                     git clone --progress ${GIT_REMOTEHOST_SSH} ${GIT_DEFAULT_BRANCH}
-                    git checkout $gittag
+                    git checkout $GITTAG
                     status=$?
                     rm -rf ./.git/
                 else
-                    git archive --format=tar --remote=${GIT_REMOTEHOST_SSH} $gittag | tar -xf -
+                    git archive --format=tar --remote=${GIT_REMOTEHOST_SSH} $GITTAG | tar -xf -
                     status=$?
                 fi
         fi
@@ -60,14 +60,22 @@ if [ "$startDeploy" = "y" ]
 
         cd ..
         ############################# change user and group #################################
-        #chown -R ${G_WEBSERVER_USER}:${G_WEBSERVER_GROUP} $tag/*
+        #chown -R ${G_WEBSERVER_USER}:${G_WEBSERVER_GROUP} $TAG/*
 
         # github swtich
         if test $GIT_GITHUB_SWITCH == 1
         then
-            cd $tag/${GIT_DEFAULT_BRANCH}
+            cd $TAG/${GIT_DEFAULT_BRANCH}
         else
-            cd $tag/
+            cd $TAG/
+        fi
+
+        ############################# replace version in config ##########################
+
+        if test $FEATURE_VERSION_REPLACE == 1
+        then
+            sed -i -r "s/$VERSION_PATTERN\b/$TAG/g" "$PATH_VERSION_FILE"
+            echo "Replace Version finished"
         fi
 
         ############################# go to build folder #################################
@@ -127,37 +135,37 @@ if [ "$startDeploy" = "y" ]
         then
             if test $G_SYNC_MODE = "rsync"
             then
-                rsync -r --progress $tag/$GIT_DEFAULT_BRANCH/ $SERVER_USER@$SERVER_IP:$SERVER_PATH_TAGS/$tag/
+                rsync -r --progress $TAG/$GIT_DEFAULT_BRANCH/ $SERVER_USER@$SERVER_IP:$SERVER_PATH_TAGS/$TAG/
             else
-                scp -r $tag/$GIT_DEFAULT_BRANCH/ $SERVER_USER@$SERVER_IP:$SERVER_PATH_TAGS/$tag/
+                scp -r $TAG/$GIT_DEFAULT_BRANCH/ $SERVER_USER@$SERVER_IP:$SERVER_PATH_TAGS/$TAG/
             fi
         else
             if test $G_SYNC_MODE = "rsync"
             then
-                rsync -r -v --progress $tag/ $SERVER_USER@$SERVER_IP:$SERVER_PATH_TAGS/$tag/
+                rsync -r -v --progress $TAG/ $SERVER_USER@$SERVER_IP:$SERVER_PATH_TAGS/$TAG/
             else
-                scp -r $tag/ $SERVER_USER@$SERVER_IP:$SERVER_PATH_TAGS/$tag/
+                scp -r $TAG/ $SERVER_USER@$SERVER_IP:$SERVER_PATH_TAGS/$TAG/
             fi
         fi
 
         # using "" instead of '' to interpret the variables - change permissions | delete symlink | create symlink
         echo "Setzte Schreibrechte && Lösche alten Symlink && Erstelle Symlink"
-        ssh $SERVER_USER@$SERVER_IP "chown -R ${SERVER_WEBSERVER_USER}:${SERVER_WEBSERVER_GROUP} ${SERVER_PATH_TAGS}/$tag && rm ${SERVER_PATH_ACTIVE} && ln -s ${SERVER_PATH_TAGS}/$tag/${SERVER_FOLDER_WWW} ${SERVER_PATH_ACTIVE}"
+        ssh $SERVER_USER@$SERVER_IP "chown -R ${SERVER_WEBSERVER_USER}:${SERVER_WEBSERVER_GROUP} ${SERVER_PATH_TAGS}/$TAG && rm ${SERVER_PATH_ACTIVE} && ln -s ${SERVER_PATH_TAGS}/$TAG/${SERVER_FOLDER_WWW} ${SERVER_PATH_ACTIVE}"
 
         # set permissions
         if test $CUSTOM_CHMOD == 1
         then
             for var in "${PATH_CHMOD_ARRAY[@]}"
             do
-                ssh $SERVER_USER@$SERVER_IP "chmod $PATH_CHMOD_VALUE -R ${SERVER_PATH_TAGS}/$tag/$var"
-                echo "Setze Schreibrechte für ${SERVER_PATH_TAGS}/$tag/$var"
+                ssh $SERVER_USER@$SERVER_IP "chmod $PATH_CHMOD_VALUE -R ${SERVER_PATH_TAGS}/$TAG/$var"
+                echo "Setze Schreibrechte für ${SERVER_PATH_TAGS}/$TAG/$var"
             done
         fi
 
         # symlink project log folder to log folder
         if test $LOG_SYMLINKING == 1
         then
-            ssh $SERVER_USER@$SERVER_IP "rm ${SERVER_PATH_LOG} && ln -s ${SERVER_PATH_TAGS}/$tag/${SERVER_FOLDER_LOG} ${SERVER_PATH_LOG} && chown -R ${SERVER_WEBSERVER_USER}:${SERVER_WEBSERVER_GROUP} ${SERVER_PATH_LOG}"
+            ssh $SERVER_USER@$SERVER_IP "rm ${SERVER_PATH_LOG} && ln -s ${SERVER_PATH_TAGS}/$TAG/${SERVER_FOLDER_LOG} ${SERVER_PATH_LOG} && chown -R ${SERVER_WEBSERVER_USER}:${SERVER_WEBSERVER_GROUP} ${SERVER_PATH_LOG}"
         fi
 
         # clear cache folders
@@ -165,8 +173,8 @@ if [ "$startDeploy" = "y" ]
         then
             for var in "${PATH_CLEAR_CACHE_ARRAY[@]}"
             do
-                ssh $SERVER_USER@$SERVER_IP "rm -rf ${SERVER_PATH_TAGS}/$tag/$var"
-                echo "Leere Cache Ordner: ${SERVER_PATH_TAGS}/$tag/$var"
+                ssh $SERVER_USER@$SERVER_IP "rm -rf ${SERVER_PATH_TAGS}/$TAG/$var"
+                echo "Leere Cache Ordner: ${SERVER_PATH_TAGS}/$TAG/$var"
             done
         fi
 

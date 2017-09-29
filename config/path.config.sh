@@ -8,6 +8,11 @@ PATH_PHING="vendor/bin/phing"
 PATH_BUILD="build/"
 PATH_TAGS="tags/"
 
+# if enable the version will be set (0 = disable)
+FEATURE_VERSION_REPLACE=0
+VERSION_PATTERN="DEPLOY.VERSION"
+PATH_VERSION_FILE="config/autoload/global.php"
+
 # enable or disable the custom chmod feature 0 = disabled
 CUSTOM_CHMOD=0
 # Folder they need custom chmod e.g. cache
