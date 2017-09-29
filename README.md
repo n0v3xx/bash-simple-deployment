@@ -3,6 +3,15 @@ Simple bash deployment script for basic web projects.
 
 ![simple deployment structure](./deployment.jpg)
 
+## Features
+* checkout from Git or Github
+* can replace active version in file
+* install and update composer
+* start phing deployment
+* set custom permission on folders
+* create symlinks from current rls to web folder
+* clear cache folders
+
 ## Required
 
 * bash, git, php, rsync or scp
